@@ -23,7 +23,7 @@ def hello_world() :
 @login_manager.user_loader
 def load_user(user_id):
      return User.query.get(user_id)
-     
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
@@ -42,7 +42,6 @@ def login():
         'message': 'Invalid credentials'
     }), 400
 
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -50,6 +49,24 @@ def logout():
     return jsonify({
         'message': 'logout successfully'
     })
+
+@app.route('/user', methods=['POST'])
+def create_user():
+    data = request.json
+    username = data['username']
+    password = data['password']
+
+    if username and password:
+        user = User(username=username, password=password)
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({
+            'message': 'User created'
+        }), 201
+
+    return jsonify({
+        'message': 'Invalid data'
+    }), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
