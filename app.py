@@ -1,11 +1,20 @@
+from dotenv import load_dotenv
+import os
 from flask import Flask, jsonify, request
 from database import db
 from models.user import User
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
+load_dotenv()
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'cd6bd383d4886c1345a9a3ed337407c16cddcce2'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+
+MYSQL_URL = os.getenv('MYSQL_URL')
+SECRET_KEY = os.getenv('SECRET_KEY')
+
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['SQLALCHEMY_DATABASE_URI'] = MYSQL_URL
+
 login_manager = LoginManager()
 
 db.init_app(app)
