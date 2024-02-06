@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from database import db
 from models.user import User
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, current_user, logout_user, login_required
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'cd6bd383d4886c1345a9a3ed337407c16cddcce2'
@@ -41,6 +41,15 @@ def login():
     return jsonify({
         'message': 'Invalid credentials'
     }), 400
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return jsonify({
+        'message': 'logout successfully'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
