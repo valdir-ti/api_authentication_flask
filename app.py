@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request
 from database import db
 from models.user import User
 from flask_login import LoginManager, login_user, current_user, logout_user, login_required
+import bcrypt
 
 load_dotenv()
 
@@ -41,11 +42,9 @@ def login():
 
     if username and password:
         user = User.query.filter_by(username=username).first()
-        if user and user.password == password:
+        if user and bcrypt.checkpw(str.encode(password), str.encode(user.password)):
                 login_user(user)
-                return jsonify({
-                    'message': 'Authentication successfully'
-                })
+                return jsonify({ 'message': 'Authentication successfully' })
 
     return jsonify({
         'message': 'Invalid credentials'
@@ -55,9 +54,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    return jsonify({
-        'message': 'logout successfully'
-    })
+    return jsonify({ 'message': 'logout successfully' })
 
 @app.route('/user', methods=['POST'])
 def create_user():
@@ -66,12 +63,11 @@ def create_user():
     password = data['password']
 
     if username and password:
-        user = User(username=username, password=password, role='user')
+        hashed = bcrypt.hashpw(str.encode(password), bcrypt.gensalt())
+        user = User(username=username, password=hashed, role='user')
         db.session.add(user)
         db.session.commit()
-        return jsonify({
-            'message': 'User created'
-        }), 201
+        return jsonify({ 'message': 'User created' }), 201
 
     return jsonify({
         'message': 'Invalid data'
