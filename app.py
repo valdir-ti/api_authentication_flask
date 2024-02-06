@@ -24,7 +24,7 @@ login_manager.init_app(app)
 login_manager.login_view = 'login'
 
 @app.route('/')
-def hello_world() :
+def hello_world():
     return jsonify({
         'message': 'api is running'
     })
@@ -66,7 +66,7 @@ def create_user():
     password = data['password']
 
     if username and password:
-        user = User(username=username, password=password)
+        user = User(username=username, password=password, role='user')
         db.session.add(user)
         db.session.commit()
         return jsonify({
@@ -93,6 +93,9 @@ def update_user(id):
     data = request.json
     user = User.query.get(id)
 
+    if id != current_user.id and current_user.role == 'user':
+        return ({ 'message': 'Operation not allowed' }), 403
+
     if user and data.get('password'):
         user.password = data.get('password')
         db.session.commit()
@@ -104,6 +107,9 @@ def update_user(id):
 @login_required
 def delete_user(id):
     user = User.query.get(id)   
+
+    if current_user.role != 'admin':
+        return ({ 'message': 'Operation not allowed' }), 403
 
     if id == current_user.id:
         return jsonify({'message': 'You cannot delete the user logged'}), 403
